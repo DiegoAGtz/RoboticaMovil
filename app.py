@@ -38,110 +38,86 @@ def angdiff(t1, t2):
     return m.copysign(angmag, angdir)
 
 
-def show_tray(x, y):
-    _, ax = plt.subplots()
-    ax.plot(x, y, ".", ls="--", c="b")
-    ax.plot(x[0], y[0], "X", c="r")
-    ax.set_title("Trayectoria")
-    plt.show()
+def readSensors(sim, sensors):
+    max_distance = 0.8
+    detect = False
+    left_activated = False
+    right_activated = False
+    detected = [0] * len(sensors)
+    activated_list = [0] * len(sensors)
+    velocities = [0] * len(sensors)
+    for i in range(len(sensors)):
+        result, distance, _, _, _ = sim.readProximitySensor(sensors[i])
+        if result and distance < max_distance:
+            detect = True
+            if i < len(sensors) / 2:
+                left_activated = True
+            else:
+                right_activated = True
+            detected[i] = distance
+            activated_list[i] = 1
+            velocities[i] = 1 - ((distance - 0.2) / (max_distance - 0.2))
+            print(f"------------------Velocities{i}: {velocities[i]}------")
+            if distance < 0.3:
+                sim.addLog(sim.verbosity_scriptinfos, f"distance from if: {distance}")
+                velocities[i] = 1
+
+    return detect, detected, left_activated, right_activated, activated_list, velocities
 
 
-def path_tray_err(sim, robot, motor_r, motor_l, xd, yd):
-    # for xd, yd in zip(xd_l, yd_l):
-    errp = 1000
-    while errp > 0.1:
-        carpos = sim.getObjectPosition(robot, -1)
-        carrot = sim.getObjectOrientation(robot, -1)
-        errp = m.sqrt((xd - carpos[0]) ** 2 + (yd - carpos[1]) ** 2)
-        angd = m.atan2(yd - carpos[1], xd - carpos[0])
-        errh = angdiff(carrot[2], angd)
-        print("Distance to goal: {} Heading error: {}".format(errp, errh))
+def path_follower(sim, xc, yc, tiempo, robot):
+    tiempo = sim.getSimulationTime()
+    xd = spi.splev(tiempo, xc, der=0)
+    yd = spi.splev(tiempo, yc, der=0)
 
-        v = kv * errp
-        omega = kh * errh
+    carpos = sim.getObjectPosition(robot, -1)
+    carrot = sim.getObjectOrientation(robot, -1)
+    errp = m.sqrt((xd - carpos[0]) ** 2 + (yd - carpos[1]) ** 2)
+    angd = m.atan2(yd - carpos[1], xd - carpos[0])
+    errh = angdiff(carrot[2], angd)
 
-        ur, ul = v2u(v, omega, r, l)
-        sim.setJointTargetVelocity(motor_l, ul)
-        sim.setJointTargetVelocity(motor_r, ur)
+    v = kv * errp
+    omega = kh * errh
 
-        x, y, _ = sim.getObjectPosition(robot, -1)
-        coordinates_x.append(x)
-        coordinates_y.append(y)
-
-
-"""
-@description:
-sensors_l -> [0, 1, 2, 3]
-sensors_r -> [7, 6, 5, 4]
-"""
-
-
-def evade(sim, motor_r, motor_l, sensors):
-    ur = sim.getJointTargetVelocity(motorR)
-    ul = sim.getJointTargetVelocity(motorL)
-    while True:
-        activated_sensor = False
-        for i in range(nSensors):
-            result, distance, _, _, _ = sim.readProximitySensor(sensors[i])
-            if result and distance < noDetectionDist:
-                if distance < maxDetectionDist:
-                    distance = maxDetectionDist
-                    detect[i] = 1 - (
-                        (distance - maxDetectionDist)
-                        / (noDetectionDist - maxDetectionDist)
-                    )
-                    activated_sensor = True
-                else:
-                    detect[i] = 0
-
-        if not activated_sensor:
-            break
-
-        for i in range(nSensors):
-            print(f"{ur} - {ul}")
-            # ur = braitenbergR[i] * detect[i] + ur
-            # ul = braitenbergL[i] * detect[i] + ul
-
-            ur = -2
-            ul = -2
-
-            sim.setJointTargetVelocity(motor_l, ul)
-            sim.setJointTargetVelocity(motor_r, ur)
+    return v2u(v, omega, r, l)
 
 
 print("Program started")
+simulation_time = 60 * 4
 
-points_number = 120
+# ------------------------ GENERAR SPLINE ---------------------------------
+xarr = np.append([0], [random.randint(-6, 6) for _ in range(9)])
+yarr = np.append([0], [random.randint(-6, 6) for _ in range(9)])
+tarr = np.linspace(0, simulation_time, xarr.shape[0])
 
-xarr = np.append([0], [random.randint(-7, 7) for _ in range(9)])
-yarr = np.append([0], [random.randint(-7, 7) for _ in range(9)])
-tarr = np.linspace(0, 10, xarr.shape[0])
-
-tnew = np.linspace(0, 10, points_number)
+tnew = np.linspace(0, simulation_time, 60)
 xc = spi.splrep(tarr, xarr, s=0)
 yc = spi.splrep(tarr, yarr, s=0)
-xnew = spi.splev(tnew, xc, der=0)
-ynew = spi.splev(tnew, yc, der=0)
+xd_l = spi.splev(tnew, xc, der=0)
+yd_l = spi.splev(tnew, yc, der=0)
 
-plt.figure(1)
-plt.plot(xnew, ynew)
-plt.plot(xarr, yarr, ".")
-plt.title("Trayectoria")
-plt.show()
-
+# ------------------------ Inicializar objetos de CoppeliaSim ---------------------------------
 client = RemoteAPIClient(host=get_host())
 sim = client.getObject("sim")
 
+n_sensors = 8
+robot = sim.getObject("/PioneerP3DX")
 motorL = sim.getObject("/PioneerP3DX/leftMotor")
 motorR = sim.getObject("/PioneerP3DX/rightMotor")
-robot = sim.getObject("/PioneerP3DX")
-nSensors = 8
 sensors = [
-    sim.getObject(f"/PioneerP3DX/ultrasonicSensor[{i}]") for i in range(nSensors)
+    sim.getObject(f"/PioneerP3DX/ultrasonicSensor[{i}]") for i in range(n_sensors)
 ]
+obstacles = [sim.getObject(f"/Cylinder[{i}]") for i in range(7)]
+# obstacles = []
 
-xd_l = xnew
-yd_l = ynew
+plt.figure(1)
+plt.plot(xd_l, yd_l)
+plt.plot(xarr, yarr, ".")
+for i in obstacles:
+    x, y, _ = sim.getObjectPosition(i, -1)
+    plt.plot(x, y, "X", c="g")
+plt.title("Trayectoria")
+plt.show()
 
 kv = 0.3
 kh = 0.8
@@ -152,46 +128,55 @@ x, y, _ = sim.getObjectPosition(robot, -1)
 coordinates_x = [x]
 coordinates_y = [y]
 
-noDetectionDist = 0.5
-maxDetectionDist = 0.2
-detect = [0.0] * 8
-braitenbergL = [-0.2, -0.4, -0.6, -0.8, -1, -1.2, -1.4, -1.6]
-braitenbergR = [-1.6, -1.4, -1.2, -1, -0.8, -0.6, -0.4, -0.2]
-v0 = 2
+# Braitenberg
+braitenbergL = [-0.4, -0.6, -0.8, -1.0, -1.2, -1.4, -1.6, -1.8]
+braitenbergR = [-1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4]
 
-# --------------------------- SIMULATION ----------------------------------
-
+# --------------------------- SIMULACIÓN ----------------------------------
 sim.startSimulation()
 
-# while sim.getSimulationTime() < points_number - 2:
-#     xd = xd_l[m.floor(sim.getSimulationTime())]
-#     yd = yd_l[m.floor(sim.getSimulationTime())]
-#     print(f"{m.floor(sim.getSimulationTime())} - {yd}")
-#     carpos = sim.getObjectPosition(robot, -1)
-#     carrot = sim.getObjectOrientation(robot, -1)
-#     errp = m.sqrt((xd - carpos[0]) ** 2 + (yd - carpos[1]) ** 2)
-#     angd = m.atan2(yd - carpos[1], xd - carpos[0])
-#     errh = angdiff(carrot[2], angd)
-#     print("Distance to goal: {} Heading error: {}".format(errp, errh))
-#
-#     v = kv * errp
-#     omega = kh * errh
-#
-#     ur, ul = v2u(v, omega, r, l)
-#
-#     sim.setJointTargetVelocity(motorL, ul)
-#     sim.setJointTargetVelocity(motorR, ur)
-#
-#     x, y, _ = sim.getObjectPosition(robot, -1)
-#     coordinates_x.append(x)
-#     coordinates_y.append(y)
 
-for xd, yd in zip(xd_l, yd_l):
-    # evade(sim, motorR, motorL, sensors)
-    path_tray_err(sim, robot, motorR, motorL, xd, yd)
+while sim.getSimulationTime() < simulation_time:
+    tiempo = sim.getSimulationTime()
+    ur, ul = path_follower(sim, xc, yc, tiempo, robot)
 
-    if sim.getSimulationTime() > 120:
-        break
+    object_detected, activated_sensors, l_sensors, r_sensors, _, vel = readSensors(
+        sim, sensors
+    )
+
+    # Evadir obstaculo
+    if object_detected:
+        sim.addLog(sim.verbosity_scriptinfos, f"Objeto detectado: {object_detected}")
+        for i in range(8):
+            ul = ul + braitenbergL[i] * vel[i]
+            ur = ur + braitenbergR[i] * vel[i]
+
+        if l_sensors and r_sensors:
+            total_l, total_r = sum(vel[:4]), sum(vel[4:])
+            if total_l > total_r:
+                ur = ur - 4
+            else:
+                ul = ul - 4
+
+    print(
+        f"Velocidad al segundo {tiempo}: ul({ul}) - ur({ur}), Detectado: {object_detected}"
+    )
+
+    sim.setJointTargetVelocity(motorL, ul)
+    sim.setJointTargetVelocity(motorR, ur)
+
+    x, y, _ = sim.getObjectPosition(robot, -1)
+    coordinates_x.append(x)
+    coordinates_y.append(y)
 
 sim.stopSimulation()
-show_tray(coordinates_x, coordinates_y)
+
+# ------------------------------Trayectoria obtenida --------------------------
+_, ax = plt.subplots()
+ax.plot(coordinates_x, coordinates_y, ".", ls="--", c="b")
+ax.plot(coordinates_x[0], coordinates_y[0], "X", c="r")
+for i in obstacles:
+    x, y, _ = sim.getObjectPosition(i, -1)
+    plt.plot(x, y, "X", c="g")
+ax.set_title("Trayectoria")
+plt.show()
