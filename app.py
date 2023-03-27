@@ -58,9 +58,9 @@ def readSensors(sim, sensors):
             activated_list[i] = 1
             velocities[i] = 1 - ((distance - 0.2) / (max_distance - 0.2))
             print(f"------------------Velocities{i}: {velocities[i]}------")
-            if distance < 0.3:
+            if distance < 0.2:
                 sim.addLog(sim.verbosity_scriptinfos, f"distance from if: {distance}")
-                velocities[i] = 1
+                velocities[i] = 2
 
     return detect, detected, left_activated, right_activated, activated_list, velocities
 
