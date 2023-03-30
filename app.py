@@ -41,32 +41,19 @@ def angdiff(t1, t2):
 def readSensors(sim, sensors):
     max_distance = 0.8
     detect = False
-    left_activated = False
-    right_activated = False
-    detected = [0] * len(sensors)
-    activated_list = [0] * len(sensors)
     velocities = [0] * len(sensors)
     for i in range(len(sensors)):
         result, distance, _, _, _ = sim.readProximitySensor(sensors[i])
         if result and distance < max_distance:
             detect = True
-            if i < len(sensors) / 2:
-                left_activated = True
-            else:
-                right_activated = True
-            detected[i] = distance
-            activated_list[i] = 1
             velocities[i] = 1 - ((distance - 0.2) / (max_distance - 0.2))
-            # print(f"------------------Velocities{i}: {velocities[i]}------")
             if distance < 0.2:
-                # sim.addLog(sim.verbosity_scriptinfos, f"distance from if: {distance}")
                 velocities[i] = 2
 
-    return detect, detected, left_activated, right_activated, activated_list, velocities
+    return detect, velocities
 
 
 def path_follower(sim, xc, yc, tiempo, robot):
-    tiempo = sim.getSimulationTime()
     xd = spi.splev(tiempo, xc, der=0)
     yd = spi.splev(tiempo, yc, der=0)
 
@@ -81,10 +68,16 @@ def path_follower(sim, xc, yc, tiempo, robot):
 
     return v2u(v, omega, r, l)
 
+
 def points_on_circumference(center, r, n):
-    return [(center[0] + (m.cos(2 * m.pi / n * x) * r),  # x
-             center[1] + (m.sin(2 * m.pi / n * x) * r)  # y
-            ) for x in range(0, n + 1)]
+    return [
+        (
+            center[0] + (m.cos(2 * m.pi / n * x) * r),  # x
+            center[1] + (m.sin(2 * m.pi / n * x) * r),  # y
+        )
+        for x in range(0, n + 1)
+    ]
+
 
 print("Program started")
 simulation_time = 60 * 6
@@ -122,30 +115,30 @@ _, ax = plt.subplots()
 world_x = [-7.5, -7.5, 7.5, 7.5, -7.5]
 world_y = [-7.5, 7.5, 7.5, -7.5, -7.5]
 plt.figure(1)
-plt.plot(world_x, world_y, c='y', label='mundo')
-plt.plot(xd_l, yd_l, label='spline')
+plt.plot(world_x, world_y, c="y", label="mundo")
+plt.plot(xd_l, yd_l, label="spline")
 
 for i in obstacles:
     x, y, _ = sim.getObjectPosition(i, -1)
-    if(i == obstacles[0]):
-        plt.plot(x, y, "o", c="g", label='obstaculo')
+    if i == obstacles[0]:
+        plt.plot(x, y, "o", c="g", label="obstaculo")
     else:
         plt.plot(x, y, "o", c="g")
 
-    for x, y in points_on_circumference((x,y), 0.25, 50):
-        #plt.plot(x, y, '.', c='g')
-        plt.scatter(x, y, s=1, c='g')
-        
-plt.plot(xarr, yarr, ".", label='puntos')
-plt.plot(xarr[0], yarr[0], 'X', c='m', label='inicio')
-plt.plot(xarr[-1], yarr[-1], 'X', c='r', label='fin')
+    for x, y in points_on_circumference((x, y), 0.25, 50):
+        # plt.plot(x, y, '.', c='g')
+        plt.scatter(x, y, s=1, c="g")
+
+plt.plot(xarr, yarr, ".", label="puntos")
+plt.plot(xarr[0], yarr[0], "X", c="m", label="inicio")
+plt.plot(xarr[-1], yarr[-1], "X", c="r", label="fin")
 plt.xlim(-10, 10)
 plt.ylim(-10, 10)
 plt.title("Trayectoria")
 pos = ax.get_position()
-ax.set_position([pos.x0, pos.y0, pos.width*0.85, pos.height])
-ax.legend(loc='center right', bbox_to_anchor=(1.32, 0.6))
-#plt.legend(loc='center right', bbox_to_anchor=(1.3, 0.5))
+ax.set_position([pos.x0, pos.y0, pos.width * 0.85, pos.height])
+ax.legend(loc="center right", bbox_to_anchor=(1.32, 0.6))
+# plt.legend(loc='center right', bbox_to_anchor=(1.3, 0.5))
 plt.show()
 
 # ---------------------------------------------------------------------------
@@ -159,8 +152,8 @@ coordinates_x = [x]
 coordinates_y = [y]
 
 # Braitenberg
-braitenbergL = [-0.4, -0.6, -0.8, -1.0, -2.0, -1.8, -1.6, -1.8]
-braitenbergR = [-1.8, -1.6, -1.8, -2.0, -1.0, -0.8, -0.6, -0.4]
+braitenbergL = [-0.8, -0.6, -0.8, -1.0, -2.0, -1.8, -1.6, -1.8]
+braitenbergR = [-1.8, -1.6, -1.8, -2.0, -1.0, -0.8, -0.6, -0.8]
 
 # --------------------------- SIMULACIÓN ----------------------------------
 sim.startSimulation()
@@ -170,9 +163,8 @@ while sim.getSimulationTime() < simulation_time:
     tiempo = sim.getSimulationTime()
     ur, ul = path_follower(sim, xc, yc, tiempo, robot)
 
-    object_detected, activated_sensors, l_sensors, r_sensors, _, vel = readSensors(
-        sim, sensors
-    )
+    # object_detected, activated_sensors, l_sensors, r_sensors, _, vel = readSensors(
+    object_detected, vel = readSensors(sim, sensors)
 
     # Evadir obstaculo
     if object_detected:
@@ -181,19 +173,10 @@ while sim.getSimulationTime() < simulation_time:
             ul = ul + braitenbergL[i] * vel[i]
             ur = ur + braitenbergR[i] * vel[i]
 
-        #if l_sensors and r_sensors:
-        #    total_l, total_r = sum(vel[:4]), sum(vel[4:])
-        #    if total_l > total_r:
-        #        ur = ur - 4
-        #    else:
-        #        ul = ul - 4    
-    
-    print(f"Velocidad [{m.floor(tiempo)}]: ul({ul}) - ur({ur})")        
-
-    while (ul > 5.0 or ur > 5.0):
-        ul*=0.85
-        ur*=0.85
-        print(f"Velocidad corregida [{m.floor(tiempo)}]: ul({ul}) - ur({ur})")    
+    while ul > 5.0 or ur > 5.0:
+        ul *= 0.85
+        ur *= 0.85
+        print(f"Velocidad corregida [{m.floor(tiempo)}]: ul({ul}) - ur({ur})")
 
     sim.setJointTargetVelocity(motorL, ul)
     sim.setJointTargetVelocity(motorR, ur)
@@ -206,42 +189,42 @@ sim.stopSimulation()
 
 # ------------------------------Trayectoria obtenida --------------------------
 _, ax = plt.subplots(1, 2)
-#ax.plot(coordinates_x, coordinates_y, ".", ls="--", c="b")
-ax[1].plot(world_x, world_y, c='y', label='mundo')
-ax[1].plot(coordinates_x, coordinates_y, c="b", label='ruta')
+# ax.plot(coordinates_x, coordinates_y, ".", ls="--", c="b")
+ax[1].plot(world_x, world_y, c="y", label="mundo")
+ax[1].plot(coordinates_x, coordinates_y, c="b", label="ruta")
 
 for i in obstacles:
     x, y, _ = sim.getObjectPosition(i, -1)
-    if(i == obstacles[0]):
-        ax[1].plot(x, y, "o", c="g", label='obstaculo')
+    if i == obstacles[0]:
+        ax[1].plot(x, y, "o", c="g", label="obstaculo")
     else:
         ax[1].plot(x, y, "o", c="g")
-    for x, y in points_on_circumference((x,y), 0.25, 50):
-        #ax.plot(x, y, ".", c="g")
-        ax[1].scatter(x, y, s=1, c='g')
+    for x, y in points_on_circumference((x, y), 0.25, 50):
+        # ax.plot(x, y, ".", c="g")
+        ax[1].scatter(x, y, s=1, c="g")
 
-ax[1].plot(coordinates_x[0], coordinates_y[0], 'X', c='m', label='inicio')
-ax[1].plot(coordinates_x[-1], coordinates_y[-1], 'X', c='r', label='fin')
+ax[1].plot(coordinates_x[0], coordinates_y[0], "X", c="m", label="inicio")
+ax[1].plot(coordinates_x[-1], coordinates_y[-1], "X", c="r", label="fin")
 ax[1].set_xlim(-10, 10)
 ax[1].set_ylim(-10, 10)
 ax[1].set_title("Trayectoria Final")
-#ax[1].legend(loc='center right', bbox_to_anchor=(1.13, 0.5))
+# ax[1].legend(loc='center right', bbox_to_anchor=(1.13, 0.5))
 pos = ax[1].get_position()
-ax[1].set_position([pos.x0, pos.y0, pos.width*0.85, pos.height])
-ax[1].legend(loc='center right', bbox_to_anchor=(1.32, 0.6))
-ax[0].plot(world_x, world_y, c='y')
+ax[1].set_position([pos.x0, pos.y0, pos.width * 0.85, pos.height])
+ax[1].legend(loc="center right", bbox_to_anchor=(1.32, 0.6))
+ax[0].plot(world_x, world_y, c="y")
 ax[0].plot(xd_l, yd_l)
 
 for i in obstacles:
     x, y, _ = sim.getObjectPosition(i, -1)
     ax[0].plot(x, y, "o", c="g")
-    for x, y in points_on_circumference((x,y), 0.25, 50):
-        #plt.plot(x, y, '.', c='g')
-        ax[0].scatter(x, y, s=1, c='g')
-        
+    for x, y in points_on_circumference((x, y), 0.25, 50):
+        # plt.plot(x, y, '.', c='g')
+        ax[0].scatter(x, y, s=1, c="g")
+
 ax[0].plot(xarr, yarr, ".")
-ax[0].plot(xarr[0], yarr[0], 'X', c='m')
-ax[0].plot(xarr[-1], yarr[-1], 'X', c='r')
+ax[0].plot(xarr[0], yarr[0], "X", c="m")
+ax[0].plot(xarr[-1], yarr[-1], "X", c="r")
 ax[0].set_xlim(-10, 10)
 ax[0].set_ylim(-10, 10)
 ax[0].set_title("Trayectoria Original")
