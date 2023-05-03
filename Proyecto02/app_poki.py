@@ -46,32 +46,32 @@ def check_position(x, y):
     # MATRIZ 1 * 2
     if flags[0] == 0 and x > 1.5:        
         print("MATRIZ 1 * 2")
-        occgrid = np.hstack((occgrid, 0.5*np.ones((100,100))))
-        tocc = np.hstack((tocc, np.zeros((100,100))))
-        width = 200        
+        occgrid = np.hstack((occgrid, 0.5*np.ones((50,50))))
+        tocc = np.hstack((tocc, np.zeros((50,50))))
+        width = 100        
         flags[0] = 1        
     # MATRIZ 2 * 2
     elif flags[1] == 0  and y > 2.5:
         print("MATRIZ 2 * 2")        
-        occgrid = np.vstack((0.5*np.ones((100,200)), occgrid))     
-        tocc = np.vstack((np.zeros((100,200)), tocc))
-        height = 200
-        center_y = 150
+        occgrid = np.vstack((0.5*np.ones((50,100)), occgrid))     
+        tocc = np.vstack((np.zeros((50,100)), tocc))
+        height = 100
+        center_y = 75
         flags[1] = 1        
     # MATRIZ 2 * 3
     elif flags[2] == 0 and x < -1.5:
         print("MATRIZ 2 * 3")
-        occgrid = np.hstack((0.5*np.ones((200,100)), occgrid))
-        tocc = np.hstack(( np.zeros((200,100)), tocc))        
-        width = 300
-        center_x = 150
+        occgrid = np.hstack((0.5*np.ones((100,50)), occgrid))
+        tocc = np.hstack(( np.zeros((100,50)), tocc))        
+        width = 150
+        center_x = 75
         flags[2] = 1
     # MATRIZ 3 * 3
     elif flags[3] == 0 and y < -2.5:  
         print("MATRIZ 3 * 3")      
-        occgrid = np.vstack((occgrid, 0.5*np.ones((100,300))))
-        tocc = np.vstack((tocc, np.zeros((100,300))))
-        height = 300
+        occgrid = np.vstack((occgrid, 0.5*np.ones((50,150))))
+        tocc = np.vstack((tocc, np.zeros((50,150))))
+        height = 150
         flags[3] = 1        
 
 # def check_sensors(i):
@@ -140,21 +140,21 @@ if os.path.exists('map.txt'):
     occgrid = np.loadtxt('map.txt')
     tocc = 1.0*(occgrid > 0.5)
     occgrid[occgrid > 0.5] = 0
-    width = 300
-    height = 300
+    width = 150
+    height = 150
     flags[3] = 1
     # CENTROS PARA LA TRANSFORMACIÓN
-    center_x = 150
-    center_y = 150
+    center_x = 75
+    center_y = 75
 else:
     print('Creating new map')
-    occgrid = 0.5*np.ones((100,100))
-    tocc = np.zeros((100,100))
-    height = 100
-    width = 100
+    occgrid = 0.5*np.ones((50,50))
+    tocc = np.zeros((50,50))
+    height = 50
+    width = 50
     # CENTROS PARA LA TRANSFORMACIÓN
-    center_x = 50
-    center_y = 50
+    center_x = 25
+    center_y = 25
 
 t = time.time()
 
@@ -163,7 +163,7 @@ niter = 0
 
 #MATRIZ Y CONSTANTES
 scale = 0.1
-multi = 2
+multi = 1
 
 while time.time()-t < 30:
     carpos = sim.getObjectPosition(robot, -1)
