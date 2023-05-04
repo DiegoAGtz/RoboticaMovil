@@ -7,13 +7,29 @@ Author: Juan-Pablo Ramirez-Paredes <jpi.ramirez@ugto.mx>
 Mobile Robotics course, University of Guanajuato (2023)
 """
 
-import numpy as np
-import time
 import math as m
-import matplotlib.pyplot as plt
 import os
-from zmqRemoteApi import RemoteAPIClient
+import platform
+import time
+
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+from zmqRemoteApi import RemoteAPIClient
+
+
+def get_host():
+    so = platform.system()
+    if so != "Linux":
+        return "localhost"
+
+    ip = ""
+    with open("/etc/resolv.conf", "r") as f:
+        data = f.readlines()
+        ip = data[-1][:-1]
+        ip = ip[11:]
+    return ip
+
 
 def q2R(x,y,z,w):
     R = np.zeros((3,3))
@@ -100,7 +116,7 @@ def check_position(x, y):
 #         tocc[xo-1, yo-1] = 1
 #     return xo, yo
 
-client = RemoteAPIClient()
+client = RemoteAPIClient(host=get_host())
 sim = client.getObject('sim')
 
 motorL=sim.getObject('/PioneerP3DX/leftMotor')
