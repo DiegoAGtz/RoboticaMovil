@@ -55,42 +55,43 @@ def q2R(x, y, z, w):
     R[2, 2] = 1 - 2 * (x**2 + y**2)
     return R
 
+
 def calculateMap(center, scala, Map, obstacles, sensor):
-    
-    sSensor = [int(i/scala) for i in sensor[:2]] 
+
+    sSensor = [int(i / scala) for i in sensor[:2]]
     cSensor = [center[0] - sSensor[1], center[1] + sSensor[0]]
-    #cSensor = [center[0] - sSensor[0], center[1] + sSensor[1]]
+    # cSensor = [center[0] - sSensor[0], center[1] + sSensor[1]]
 
     newMap = np.copy(Map)
     newObstacles = np.copy(obstacles)
     newCenter = center
     size = newMap.shape
-    
-    combineMap = lambda m1, m2, n: np.hstack((m1, m2)) if bool(n) else np.vstack((m1, m2))
-    
+
+    combineMap = (
+        lambda m1, m2, n: np.hstack((m1, m2)) if bool(n) else np.vstack((m1, m2))
+    )
+
     for i, _ in enumerate(size):
-        if(cSensor[i] > size[i]):
-            if(i):
-                newSize = (size[i-1], int(cSensor[i] - size[i]))
+        if cSensor[i] > size[i]:
+            if i:
+                newSize = (size[i - 1], int(cSensor[i] - size[i]))
             else:
-                newSize = (int(cSensor[i] - size[i]), size[i+1])
-            newMap = combineMap(np.copy(newMap), 0.5*np.ones(newSize), i)
+                newSize = (int(cSensor[i] - size[i]), size[i + 1])
+            newMap = combineMap(np.copy(newMap), 0.5 * np.ones(newSize), i)
             newObstacles = combineMap(np.copy(newObstacles), np.zeros(newSize), i)
             size = newMap.shape
-        
-        if(cSensor[i] < 0):
-            if(i):
-                newSize = (size[i-1], int(abs(cSensor[i])))
+
+        if cSensor[i] < 0:
+            if i:
+                newSize = (size[i - 1], int(abs(cSensor[i])))
             else:
-                newSize = (int(abs(cSensor[i])), size[i+1])
-            newMap = combineMap(0.5*np.ones(newSize), np.copy(newMap), i)
+                newSize = (int(abs(cSensor[i])), size[i + 1])
+            newMap = combineMap(0.5 * np.ones(newSize), np.copy(newMap), i)
             newObstacles = combineMap(np.zeros(newSize), np.copy(newObstacles), i)
             newCenter[i] += newSize[i]
             size = newMap.shape
-    
-    
+
     return [newMap, newObstacles, newCenter]
-    
 
 
 def readSensors(sim, sensors):
@@ -213,24 +214,24 @@ center_x = 150 // 2
 center_y = 150 // 2
 s = 0.1
 initialFloor = 5
-cellC = int(initialFloor/s)
-cellR = int(initialFloor/s)
+cellC = int(initialFloor / s)
+cellR = int(initialFloor / s)
 
 x, y, _ = sim.getObjectPosition(robot, -1)
 coordinates_x = [x]
 coordinates_y = [y]
 
 # Braitenberg
-lgains = [-1.0, -0.8, -1.0, -1.2, -2.2, -2.0, -1.8, -2.0]
-rgains = [-2.0, -1.8, -2.0, -2.2, -1.2, -1.0, -0.8, -1.0]
+lgains = [-1.2, -0.8, -1.0, -1.2, -2.2, -2.0, -1.8, -2.0]
+rgains = [-2.0, -1.8, -2.0, -2.2, -1.2, -1.0, -0.8, -1.2]
 
-#Leer archivo ?
-#Crear mapa
-print('Creating new map')
-occgrid = 0.5*np.ones((cellR, cellR))
+# Leer archivo ?
+# Crear mapa
+print("Creating new map")
+occgrid = 0.5 * np.ones((cellR, cellR))
 tocc = np.zeros((cellR, cellR))
-#Calcular centro
-center = [int(cellR/2), int(cellC/2)]
+# Calcular centro
+center = [int(cellR / 2), int(cellC / 2)]
 t = time.time()
 initt = t
 niter = 0
@@ -247,7 +248,7 @@ terminar = False
 iter_no_expandio = 0
 while True:
     if terminar:
-        break;
+        break
     tiempo_inicial_iter = sim.getSimulationTime()
     while sim.getSimulationTime() < tiempo_total:
         tiempo = sim.getSimulationTime() - tiempo_inicial_iter
@@ -290,7 +291,7 @@ while True:
             rpos = np.array(carpos).reshape((3, 1))
             pobs = np.matmul(R, robs) + rpos
 
-            #Mapa Dinamico
+            # Mapa Dinamico
             occgrid, tocc, center = calculateMap(center, s, occgrid, tocc, pobs)
             cellR, cellC = occgrid.shape
 
@@ -305,7 +306,9 @@ while True:
                 yo = cellR
             if state:
                 tocc[yo - 1, xo - 1] = 1
-            occgrid = cv2.line(occgrid, (xr - 1, yr - 1), (xo - 1, yo - 1), (0, 0, 0), 1)
+            occgrid = cv2.line(
+                occgrid, (xr - 1, yr - 1), (xo - 1, yo - 1), (0, 0, 0), 1
+            )
 
         # Reactive navigation block
         ur, ul = path_follower(sim, xc, yc, tiempo, robot)
@@ -332,8 +335,26 @@ while True:
     iteraciones = iteraciones + 1
     tiempo_requerido = tiempo_requerido + 60
     tiempo_total = tiempo_total + tiempo_requerido
-    xarr = np.array([carpos[0], -1.0-iteraciones,  1.0+iteraciones, 1.0+iteraciones, -1.0-iteraciones, carpos[0] - iteraciones])
-    yarr = np.array([carpos[1], 1.0+iteraciones, 1.0+iteraciones, -1.0-iteraciones,  -1.0-iteraciones, carpos[1] + iteraciones])
+    xarr = np.array(
+        [
+            carpos[0],
+            -1.0 - iteraciones,
+            1.0 + iteraciones,
+            1.0 + iteraciones,
+            -1.0 - iteraciones,
+            carpos[0] - iteraciones,
+        ]
+    )
+    yarr = np.array(
+        [
+            carpos[1],
+            1.0 + iteraciones,
+            1.0 + iteraciones,
+            -1.0 - iteraciones,
+            -1.0 - iteraciones,
+            carpos[1] + iteraciones,
+        ]
+    )
     tarr = np.linspace(0, tiempo_requerido, xarr.shape[0])
 
     tnew = np.linspace(0, tiempo_requerido, 60)
