@@ -47,7 +47,7 @@ def readSensors(sim, sensors):
         if result and distance < max_distance:
             detect = True
             velocities[i] = 1 - ((distance - 0.2) / (max_distance - 0.2))
-            if distance < 0.2:
+            if distance < 0.4:
                 velocities[i] = 2
 
     return detect, velocities
