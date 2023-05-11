@@ -3,12 +3,14 @@ import os
 import platform
 import random
 import time
+import astarmod
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as spi
-# from zmqRemoteApi import RemoteAPIClient
+from skimage.morphology import binary_dilation, disk
+from zmqRemoteApi import RemoteAPIClient
 
 
 def get_host():
@@ -22,6 +24,12 @@ def get_host():
         ip = data[-1][:-1]
         ip = ip[11:]
     return ip
+
+def mapToMatrix(point, center, scala):
+    return [int(center[0] - point[1]/scala), int(center[1] + point[0]/scala)]
+    
+def matrixToMap(point, center, scala):
+    return [(point[1] - center[1])*scala, (center[0] - point[0])*scala]
 
 if os.path.exists('map.txt'):
     print('Map found. Loading...')
@@ -43,5 +51,26 @@ else:
     center_x = 25
     center_y = 25
 
-plt.imshow(tocc + occgrid)
+mapa = np.uint8(tocc > 0.5)
+disk = disk(3)
+nmap = binary_dilation(mapa, disk)
+map = nmap + occgrid
+
+plt.imshow(map)
+plt.show()
+
+cfree = False
+while not cfree:
+    loc = np.random.randint(0, 150, (4,))
+    vals = map[loc[0], loc[1]]
+    vale = map[loc[2], loc[3]]
+    if vals == 0 and vale == 0:
+        cfree = True
+print(loc)
+
+route = astarmod.astar(map, (loc[0], loc[1]), (loc[2], loc[3]), allow_diagonal_movement=True)
+rr, cc = astarmod.path2cells(route)
+map[rr, cc] = 128
+
+plt.imshow(map)
 plt.show()
