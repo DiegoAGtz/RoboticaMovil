@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 import math as m
-import os
 import platform
-import random
-import time
 
 import astarmod
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as spi
