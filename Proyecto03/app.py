@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import math as m
 import platform
-
 import astarmod
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,14 +35,14 @@ def get_foor_size(sim, floor):
 
 def get_map(sim, floor_size, s, script_path):
     with open(script_path, 'r') as f:
-        file_content = f.read() 
+        s_content = f.read() 
 
     sim.startSimulation()
-    obj = sim.createPureShape(0, 0, [0.1 , 0.1, 0.1], 1)    # Object creation
-    sm = sim.addScript(1)                                   # Code creation
-    sim.associateScriptWithObject(sm, obj)                  # Code association
-    sim.setScriptText(sm, file_content)                     # Uploading code
-    mapa = sim.callScriptFunction("getMap", sm, [floor_size[1], floor_size[0]], s, obj) # Calling getMap function
+    obj = sim.createPureShape(0, 0, [s, s, s], 1)    # Object creation
+    script = sim.addScript(1)                                   # Code creation
+    sim.associateScriptWithObject(script, obj)                  # Code association
+    sim.setScriptText(script, s_content)                     # Uploading code
+    mapa = sim.callScriptFunction("getMap", script, [floor_size[1], floor_size[0]], s, obj) # Calling getMap function
     sim.removeObject(obj)                                   # Removing object
     sim.stopSimulation()
 
@@ -106,8 +105,8 @@ robot = sim.getObject("/PioneerP3DX")
 motorL = sim.getObject("/PioneerP3DX/leftMotor")
 motorR = sim.getObject("/PioneerP3DX/rightMotor")
 floor = sim.getObject('./*Floor*')
-floor_size = get_foor_size(sim, floor)
 
+floor_size = get_foor_size(sim, floor)
 x, y, _ = sim.getObjectPosition(robot, -1)
 s = 0.1
 center_map = (floor_size[0]/2, floor_size[1]/2)
