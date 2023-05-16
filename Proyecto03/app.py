@@ -10,7 +10,6 @@ from scipy.ndimage import rotate
 from skimage.morphology import binary_dilation, disk
 from zmqRemoteApi import RemoteAPIClient
 
-
 def get_host():
     so = platform.system()
     if so != "Linux":
