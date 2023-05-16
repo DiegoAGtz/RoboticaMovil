@@ -18,7 +18,7 @@ function getMap(size, scala, obj)
             sim.setObjectPosition(obj, -1, {x, y, 0.5})
             result, pairHandles = sim.checkCollision(obj, sim.handle_all)
             map[i] = result
-	    i = i + 1
+	        i = i + 1
         end
     end
     
