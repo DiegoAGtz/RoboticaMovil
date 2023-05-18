@@ -66,7 +66,7 @@ def get_map(sim, floor_size, s, script_path):
 
 
 def map_dilation(f_map):
-    n_disk = disk(3)
+    n_disk = disk(4)
     f_map = binary_dilation(f_map, n_disk)
     return f_map
 
@@ -140,15 +140,15 @@ f_map = rotate(f_map, angle=90)
 d_map = map_dilation(f_map)
 
 c_init = map2matrix([(x, y)], center_matrix, s)[0]
-c_dst = (0, 0)
+c_dst = [0, 0]
 c_free = False
 while not c_free:
-    x_dst = np.random.randint(0, int(floor_size[0] / s))
-    y_dst = np.random.randint(0, int(floor_size[1] / s))
-    val_e = d_map[x_dst, y_dst]
+    c_dst[0] = np.random.randint(0, int(floor_size[0] / s))
+    c_dst[1] = np.random.randint(0, int(floor_size[1] / s))
+    val_e = d_map[c_dst[0], c_dst[1]]
     if not val_e:
         c_free = True
-c_dst = tuple(c_dst)
+        c_dst = tuple(c_dst)
 
 path, p_map = get_astar_path(d_map, c_init, c_dst)
 plt.imshow(d_map)
@@ -173,11 +173,9 @@ r = 0.5 * 0.195
 l = 2 * 0.1655
 errp = 10
 
-p_init = matrix2map([c_init], center_matrix, 0.1)
-coordinates_x = [p_init[0][0]]
-coordinates_y = [p_init[0][1]]
+coordinates_x = [x]
+coordinates_y = [y]
 
-sim.setObjectPosition(robot, -1, [p_init[0][0], p_init[0][1], 0.13879])
 print("start ")
 sim.startSimulation()
 while sim.getSimulationTime() < simulation_time:
@@ -199,7 +197,7 @@ ax[0].imshow(d_map)
 ax[1].plot(xarr, yarr, ".", label="puntos")
 ax[1].plot(xarr[0], yarr[0], "X", c="m", label="inicio")
 ax[1].plot(xarr[-1], yarr[-1], "X", c="r", label="fin")
-ax[1].set_xlim(-center_map[0] - 1, center_map[0] + 1)
-ax[1].set_ylim(-center_map[1] - 1, center_map[1] + 1)
+ax[1].set_xlim(-center_map[0] - 1, center_map[0] + 2)
+ax[1].set_ylim(-center_map[1] - 1, center_map[1] + 2)
 ax[1].set_title("Trayectoria obtenida")
 plt.show()
