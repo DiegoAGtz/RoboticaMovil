@@ -7,7 +7,7 @@ let px = 10,
   py = 10;
 
 const joystick = new Joystick("stick1", 64, 8);
-let webSocket = new WebSocketC("ws://192.168.0.126/ws", "webSocketMessage");
+let webSocket = new WebSocketC("ws://192.168.193.103/ws", "webSocketMessage");
 
 function update(v1: number, v2: number): void {
   let { x, y } = joystick.value;
@@ -52,7 +52,7 @@ function loop() {
     ena = 0,
     enb = 0;
 
-  if (webSocket.isOpened && compare(x, y)) {
+  if (compare(x, y)) {
     if (-py >= 0) {
       in1++;
       in3++;
@@ -82,7 +82,7 @@ function loop() {
     enb = Math.floor(mapValues(enb, minVel*2, maxVel*2 - 50, minVel, maxVel));
 
     let message  = `${in1},${in2},${in3},${in4},${ena},${enb}`;
-    webSocket.sendMessage(message);
+    //webSocket.sendMessage(message);
     update(ena, enb);
   }
 }
