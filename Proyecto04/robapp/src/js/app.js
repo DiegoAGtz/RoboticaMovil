@@ -33,8 +33,7 @@ function loop() {
     requestAnimationFrame(loop);
     let { x, y } = joystick.value;
     let in1 = 0, in2 = 0, in3 = 0, in4 = 0, ena = 0, enb = 0;
-    // if (webSocket.isOpened && compare(x, y)) {
-    if (compare(x, y)) {
+    if (webSocket.isOpened && compare(x, y)) {
         if (-py >= 0) {
             in1++;
             in3++;
@@ -64,8 +63,7 @@ function loop() {
         ena = Math.floor(mapValues(ena, minVel * 2, maxVel * 2 - 50, minVel, maxVel));
         enb = Math.floor(mapValues(enb, minVel * 2, maxVel * 2 - 50, minVel, maxVel));
         let message = `${in1},${in2},${in3},${in4},${ena},${enb}`;
-        console.log(message);
-        // webSocket.sendMessage(message);
+        webSocket.sendMessage(message);
         update(ena, enb);
     }
 }

@@ -5,7 +5,6 @@ export class WebSocketC {
             this.isOpened = true;
         };
         this.onMessage = (event) => {
-            console.log(event.data);
             if (this.html)
                 this.html.innerText = `Server says -> ${event.data}mm`;
         };

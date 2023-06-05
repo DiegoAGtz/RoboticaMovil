@@ -52,8 +52,7 @@ function loop() {
     ena = 0,
     enb = 0;
 
-  // if (webSocket.isOpened && compare(x, y)) {
-  if (compare(x, y)) {
+  if (webSocket.isOpened && compare(x, y)) {
     if (-py >= 0) {
       in1++;
       in3++;
@@ -83,8 +82,7 @@ function loop() {
     enb = Math.floor(mapValues(enb, minVel*2, maxVel*2 - 50, minVel, maxVel));
 
     let message  = `${in1},${in2},${in3},${in4},${ena},${enb}`;
-    console.log(message);
-    // webSocket.sendMessage(message);
+    webSocket.sendMessage(message);
     update(ena, enb);
   }
 }

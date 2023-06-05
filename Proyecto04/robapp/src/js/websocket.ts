@@ -21,7 +21,6 @@ export class WebSocketC {
   };
 
   onMessage = (event: MessageEvent) => {
-    console.log(event.data);
     if (this.html)
       this.html.innerText = `Server says -> ${event.data}mm`;
   };
