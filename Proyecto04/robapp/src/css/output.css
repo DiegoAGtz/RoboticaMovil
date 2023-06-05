@@ -609,8 +609,8 @@ video {
   justify-items: center;
 }
 
-.bg-\[url\(\'\.\/images\/joystick-base\.png\'\)\] {
-  background-image: url('./images/joystick-base.png');
+.bg-\[url\(\'\.\.\/images\/joystick-base\.png\'\)\] {
+  background-image: url('../images/joystick-base.png');
 }
 
 .bg-cover {

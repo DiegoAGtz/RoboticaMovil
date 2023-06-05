@@ -6,7 +6,6 @@
     <meta name="viewport" content=
     "width=device-width, initial-scale=1.0">
     <!--<link rel="stylesheet" href="./css/output.css">-->
-
     <script src="https://cdn.tailwindcss.com"></script>
     <title>RobApp</title>
 </head>
@@ -16,12 +15,29 @@
     <p class="col-span-12">Joystick Controls.</p>
     <div id="joyValues" class="col-span-12"></div>
     <div id="pwmValues" class="col-span-12 mt-5"></div>
+
+    <div class="mt-2 ml-10 sm:ml-80 h-4 relative w-60 rounded-full overflow-hidden">
+        <div class="w-full h-full bg-gray-200 absolute"></div>
+        <div class="h-full bg-yellow-400 sm:bg-green-500 absolute" style="width:80%"></div>
+    </div>
+
     <div id="webSocketMessage" class="col-span-12 mt-5"></div>
     <div class=
-    "col-span-12 bg-cover h-32 w-32 mt-10 bg-[url('./images/joystick-base.png')]">
+    "col-span-5 bg-cover h-32 w-32 mt-10 bg-[url('./images/joystick-base.png')]">
         <div id="stick1" class="relative top-8 left-8"><img src=
         "images/joystick-red.png" alt="yo"></div>
     </div>
+
+    <div class="col-span-6 grid grid-cols-3 gap-1 w-full">
+        <button class="bg-indigo-500">Left</button>
+        <div class="flex flex-col gap-1">
+            <button class="bg-indigo-500 h-full">Up</button>
+            <button class="bg-indigo-500 h-full">Down</button>
+        </div>
+        <button class="bg-indigo-500">Right</button>
+    </div>
+
     <script type="module" src="./js/app.js"></script>
-</body>
-</html>
+    </body>
+    
+    </html>

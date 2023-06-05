@@ -7,7 +7,7 @@ let px = 10,
   py = 10;
 
 const joystick = new Joystick("stick1", 64, 8);
-let webSocket = new WebSocketC("ws://192.168.0.126/ws", "webSocketMessage");
+let webSocket = new WebSocketC("ws://192.168.193.103/ws", "webSocketMessage");
 
 function update(v1: number, v2: number): void {
   let { x, y } = joystick.value;
