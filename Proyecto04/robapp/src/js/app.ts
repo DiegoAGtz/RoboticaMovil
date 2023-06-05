@@ -52,7 +52,7 @@ function loop() {
     ena = 0,
     enb = 0;
 
-  if (webSocket.isOpened && compare(x, y)) {
+  if (compare(x, y)) {
     if (-py >= 0) {
       in1++;
       in3++;
@@ -61,29 +61,23 @@ function loop() {
       in4++;
     }
 
-    ena = minVel;
-    enb = minVel;
-
-    if (px > 0) ena = mapValues(px, 0, 1, minVel, maxVel);
-    else if (px < 0) enb = mapValues(px, -1, 0, maxVel, minVel);
-
-    if (py == 0) {
-      ena += minVel;
-      enb += minVel;
-    } else if (py > 0) {
-      ena += mapValues(py, 0, 1, minVel, maxVel);
-      enb += mapValues(py, 0, 1, minVel, maxVel);
-    } else {
-      ena += mapValues(py, -1, 0, maxVel, minVel);
-      enb += mapValues(py, -1, 0, maxVel, minVel);
+    let enab = [0, 0];    
+    let i = px > 0 ? 0:1;
+    
+    if(Math.abs(px) > Math.abs(py)){
+      enab[i] = Math.abs(px);
+    }else{
+      enab[i] = Math.abs(py);
     }
 
-    ena = Math.floor(mapValues(ena, minVel*2, maxVel*2 - 50, minVel, maxVel));
-    enb = Math.floor(mapValues(enb, minVel*2, maxVel*2 - 50, minVel, maxVel));
+    enab[i == 0 ? 1:0] = Math.abs(py) - Math.abs(py/2.0)*Math.abs(px);
 
-    let message  = `${in1},${in2},${in3},${in4},${ena},${enb}`;
-    webSocket.sendMessage(message);
-    update(ena, enb);
+    enab[0] = Math.floor(mapValues(enab[0], 0, 1, minVel, maxVel));
+    enab[1] = Math.floor(mapValues(enab[1], 0, 1, minVel, maxVel));
+
+    let message  = `${in1},${in2},${in3},${in4},${enab[0]},${enab[1]}`;
+    //webSocket.sendMessage(message);
+    update(enab[0], enab[1]);
   }
 }
 
