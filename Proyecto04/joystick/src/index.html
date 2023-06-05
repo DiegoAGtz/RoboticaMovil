@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content=
+    "width=device-width, initial-scale=1.0">
+    <!--<link rel="stylesheet" href="./css/output.css">-->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>RobApp</title>
+</head>
+<body class=
+"container mx-auto grid grid-cols-12 justify-items-center">
+    <h1 class="text-4xl font-bold col-span-12">Robótica Móvil</h1>
+    <p class="col-span-12">Joystick Controls.</p>
+    <div id="joyValues" class="col-span-12"></div>
+    <div id="pwmValues" class="col-span-12 mt-5"></div>
+    <div id="webSocketMessage" class="col-span-12 mt-5"></div>
+    <div class=
+    "col-span-12 bg-cover h-32 w-32 mt-10 bg-[url('./images/joystick-base.png')]">
+        <div id="stick1" class="relative top-8 left-8"><img src=
+        "images/joystick-red.png" alt="yo"></div>
+    </div>
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>

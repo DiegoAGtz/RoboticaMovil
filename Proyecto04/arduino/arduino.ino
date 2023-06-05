@@ -1,13 +1,21 @@
-const int ENA = 10,
-          ENB = 11,
-          IN1 = 2,
-          IN2 = 3,
-          IN3 = 4,
-          IN4 = 5;
+const int ENA = 12,
+          ENB = 13,
+          IN1 = 33,
+          IN2 = 32,
+          IN3 = 25,
+          IN4 = 26;
+
+// Setting PWM properties
+// MIN PWM -> 160
+const int freq = 30000;
+const int resolution = 8;
+int dutyCycle = 200;
 
 void setup() {
-  pinMode (ENA, OUTPUT);
-  pinMode (ENB, OUTPUT);
+  ledcAttachPin(ENA,0);
+  ledcAttachPin(ENB,1);
+  ledcSetup(0, freq, resolution);
+  ledcSetup(1, freq, resolution);
   pinMode (IN1, OUTPUT);
   pinMode (IN2, OUTPUT);
   pinMode (IN3, OUTPUT);
@@ -15,8 +23,8 @@ void setup() {
 }
 
 void fordward() {
-  analogWrite (ENA, 255);
-  analogWrite (ENB, 255);
+  ledcWrite(0, 255);
+  ledcWrite(1, 255);
   digitalWrite (IN1, HIGH);
   digitalWrite (IN2, LOW);
   digitalWrite (IN3, HIGH);
@@ -24,8 +32,8 @@ void fordward() {
 }
 
 void back() {
-  analogWrite (ENA, 128);
-  analogWrite (ENB, 128);
+  ledcWrite(0, 160);
+  ledcWrite(1, 160);
   digitalWrite (IN1, LOW);
   digitalWrite (IN2, HIGH);
   digitalWrite (IN3, LOW);
@@ -37,13 +45,13 @@ void right() {
   digitalWrite (IN2, LOW);
   digitalWrite (IN3, LOW);
   digitalWrite (IN4, HIGH);
-  analogWrite (ENA, 200);
-  analogWrite (ENB, 100);
+  ledcWrite(0, 200);
+  ledcWrite(1, 160);
 }
 
 void left() {
-  analogWrite (ENA, 50);
-  analogWrite (ENB, 150);
+  ledcWrite(0, 160);
+  ledcWrite(1, 200);
   digitalWrite (IN1, LOW);
   digitalWrite (IN2, HIGH);
   digitalWrite (IN3, HIGH);
@@ -51,8 +59,6 @@ void left() {
 }
 
 void stopMotors() {
-  analogWrite (ENA, 0);
-  analogWrite (ENB, 0);
   digitalWrite (IN1, LOW);
   digitalWrite (IN2, LOW);
   digitalWrite (IN3, LOW);
