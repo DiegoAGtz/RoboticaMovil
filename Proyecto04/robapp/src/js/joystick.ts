@@ -76,7 +76,7 @@ export class Joystick {
     let x = 0,
       y = 0;
     if (event.changedTouches) {
-      for (let i = 0; i > event.changedTouches.length; i++) {
+      for (let i = 0; i < event.changedTouches.length; i++) {
         if (this.touchId == event.changedTouches[i].identifier) {
           touchMoveId = true;
           x = event.changedTouches[i].clientX;

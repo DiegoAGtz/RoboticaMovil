@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--<link rel="stylesheet" href="./css/output.css">-->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>RobApp</title>
+</head>
+
+<body class="mt-10 container mx-auto grid grid-cols-12 justify-items-center gap-10">
+  <div class="col-span-4 w-full p-4 bg-white border border-gray-200 rounded-lg shadow">
+    <h5 class="mb-3 text-base font-semibold text-gray-900 md:text-2xl">
+      Proyecto Final de Robótica Móvil
+    </h5>
+    <div x-data class="grid grid-cols-5 gap-2">
+      <div class="col-span-3">
+        <input type="tel" id="phone" x-model="$store.ws.ip"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          placeholder="Dirección IP del ESP32" @keyup.enter="$store.ws.connect($store.ws.ip)">
+      </div>
+      <button type="button"
+        class="col-span-2 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg shadow-blue-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+        @click="$store.ws.connect($store.ws.ip)">Conectar</button>
+      <div :class="{'hidden':$store.ws.alert}" class="col-span-5 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
+        role="alert">
+        <span class="font-medium">¡Error!</span> Ingrese una IP correcta.
+      </div>
+      <div :class="{'hidden':!$store.ws.success}"
+        class="col-span-5 p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
+        <span class="font-medium">¡Conectado!</span> Ahora puede controlar el robot.
+      </div>
+    </div>
+    <h5 class="mb-3 text-base font-semibold text-gray-900 md:text-xl">
+      Integrantes
+    </h5>
+    <ul class="my-4 space-y-3">
+      <li>
+        <a href="#"
+          class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow">
+          <span class="flex-1 ml-3 whitespace-nowrap">Gael Alexis Morales Flores</span>
+          <span
+            class="inline-flex items-center justify-center px-2 py-0.5 ml-3 text-xs font-medium text-gray-500 bg-gray-200 rounded">Lider</span>
+        </a>
+      </li>
+      <li>
+        <a href="#"
+          class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow">
+          <span class="flex-1 ml-3 whitespace-nowrap">Diego Armando Gutiérrez Ayala</span>
+        </a>
+      </li>
+      <li>
+        <a href="#"
+          class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow">
+          <span class="flex-1 ml-3 whitespace-nowrap">Misael Ramírez Ramírez</span>
+        </a>
+      </li>
+      <li>
+        <a href="#"
+          class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow">
+          <span class="flex-1 ml-3 whitespace-nowrap">Rogelio Manríquez Cobian</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="col-start-6 col-span-7 w-full p-4 bg-white border border-gray-200 rounded-lg shadow">
+    <div x-data="{ selected: true }" class="w-full bg-white h-full flex flex-col p-8 pt-6">
+      <h1 class="text-indigo-600 font-bold">Seleccione la modalidad</h1>
+      <div class="relative w-full mt-4 rounded-md border h-10 p-1 bg-gray-200">
+        <div class="relative w-full h-full flex items-center">
+          <div @click="selected=!selected" class="w-full flex justify-center text-gray-400 cursor-pointer">
+            <button>Yo soy más PRO</button>
+          </div>
+          <div @click="selected=!selected" class="w-full flex justify-center text-gray-400 cursor-pointer">
+            <button
+           @keydown.left="$store.directions.left()" @keyup.left="$store.directions.stop()"
+  @keydown.up="$store.directions.forward()" @keyup.up="$store.directions.stop()"
+  @keydown.down="$store.directions.reverse()" @keyup.down="$store.directions.stop()"
+  @keydown.right="$store.directions.right()" @keyup.right="$store.directions.stop()" 
+            >Mejor yo, soy más fácil</button>
+          </div>
+        </div>
+        <span
+          :class="{ 'left-1/2 -ml-1 text-indigo-600 font-semibold':!selected, 'left-1 text-indigo-600 font-semibold':selected }"
+          x-text="selected ? 'Manual' : 'Automático'"
+          class="bg-white shadow text-sm flex items-center justify-center w-1/2 rounded h-[1.88rem] transition-all duration-150 ease-linear top-[4px] absolute"></span>
+      </div>
+
+      <div id="pwmValues" class="col-span-12 mt-5"></div>
+      <div id="webSocketMessage" class="col-span-12 mt-5"></div>
+      <div class="col-span-12 mt-5">Probabilidad de choque (%):</div>
+      <div class="w-full bg-gray-200 rounded-full">
+        <div class="text-xs font-medium text-white text-center p-0.5 leading-none rounded-full"
+          :class="$store.distance.changeClasses($store.distance.value[0])"
+          :style="$store.distance.changeStyle($store.distance.value[0])" x-text="$store.distance.value[0]">
+        </div>
+      </div>
+      <div :class="{'hidden':!selected}" class="grid grid-cols-1 justify-items-center w-full my-auto">
+        <div class="col-span-6 bg-cover justify-self-center h-32 w-32 mt-10 bg-[url('./src/images/joystick-base.png')]">
+          <div id="stick1" class="relative top-8 left-8"><img src="./src/images/joystick-red.png" alt="joystick-red">
+          </div>
+        </div>
+      </div>
+
+      <div :class="{'hidden':selected}" class="col-span-6 grid grid-cols-3 gap-1 w-full mb-auto mt-10">
+        <button type="button"
+          class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg shadow-blue-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+          @mousedown="$store.directions.left()" @mouseup="$store.directions.stop()"
+          @touchstart="$store.directions.left()" @touchend="$store.directions.stop()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" class="stroke-2 w-2/4 m-auto stroke-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"></path>
+          </svg></button>
+        <div class="flex flex-col gap-1">
+          <button type="button"
+            class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg shadow-blue-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+            @mousedown="$store.directions.forward()" @mouseup="$store.directions.stop()"
+            @touchstart="$store.directions.forward()" @touchend="$store.directions.stop()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" class="stroke-2 w-2/4 m-auto stroke-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
+            </svg></button>
+          <button type="button"
+            class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg shadow-blue-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+            @mousedown="$store.directions.reverse()" @mouseup="$store.directions.stop()"
+            @touchstart="$store.directions.reverse()" @touchend="$store.directions.stop()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" class="stroke-2 w-2/4 m-auto stroke-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3">
+              </path>
+            </svg></button>
+        </div><button type="button"
+          class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg shadow-blue-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+          @mousedown="$store.directions.right()" @mouseup="$store.directions.stop()"
+          @touchstart="$store.directions.right()" @touchend="$store.directions.stop()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" class="stroke-2 w-2/4 m-auto stroke-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+          </svg></button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/js/app.ts"></script>
+</body>
+
+</html>

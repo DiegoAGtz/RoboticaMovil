@@ -7,6 +7,10 @@
 // Replace with your network credentials
 const char *ssid = "TP-Link_FA5C";
 const char *password = "83898006";
+
+//const char *ssid = "Black shark 4 Pro";
+//const char *password = "12345678";
+
 // Sensor
 // Pines por defecto: SCL = 22, SDA = 21
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
@@ -29,8 +33,8 @@ void moveMotors(int values[6]) {
   digitalWrite(IN2, values[1]);
   digitalWrite(IN3, values[2]);
   digitalWrite(IN4, values[3]);
-  ledcWrite(0, values[4]);
-  ledcWrite(1, values[5]);
+  ledcWrite(0, values[5]);
+  ledcWrite(1, values[4]);
 }
 
 // Create AsyncWebServer object on port 80
@@ -125,12 +129,10 @@ void loop() {
   lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
 
   if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+    int distance = measure.RangeMilliMeter;
     Serial.print("Distance (mm): "); 
-    Serial.println(measure.RangeMilliMeter);
-    notifyClients(String(measure.RangeMilliMeter));
-  } else {
-    Serial.println(" out of range ");
-    notifyClients("Out of range");
+    Serial.println(distance);
+    notifyClients(String(distance));
   }
   ws.cleanupClients();
   delay(500);
